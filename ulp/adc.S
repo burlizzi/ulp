@@ -146,11 +146,17 @@ engage:
 	ld r0,r2, 0  
 	add r0, r0, 1
 	st r0,r2, 0
+	jumpr entry, 10, lt
+
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, 26, 27, 1)	
+	wake
+
 	jump entry
 
 disengage:
 	move r0, 0		//disengage
 	st r0,r3, 0
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, 26, 27, 0)	
 	jump entry
 
 
