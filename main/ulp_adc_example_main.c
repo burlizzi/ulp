@@ -46,13 +46,20 @@ void app_main()
         printf("Not ULP wakeup, initializing ULP\n");
         init_ulp_program();
     } else {
-    	printf("ULP wakeup! %d Will hold for 5 seconds now...\n",ulp_Offset & UINT16_MAX);
+        vTaskDelay(pdMS_TO_TICKS(50));
+    	printf("ULP wakeup! %d Will hold for 5 seconds now...\n",ulp_Count & UINT16_MAX);
         vTaskDelay(pdMS_TO_TICKS(5000));
     }
 
     printf("Entering deep sleep\n\n");
     /* Start the ULP program */
     ESP_ERROR_CHECK( ulp_run((&ulp_entry - RTC_SLOW_MEM) / sizeof(uint32_t)));
-    ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
-    esp_deep_sleep_start();
+    while(true)
+    {
+    	printf("cycle! %d %d %d Will hold for 5 seconds now...\n",ulp_Gauss & UINT16_MAX,ulp_Count & UINT16_MAX,ulp_Engaged & UINT16_MAX);
+        vTaskDelay(pdMS_TO_TICKS(300));
+    }
+
+    //ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
+    //esp_deep_sleep_start();
 }

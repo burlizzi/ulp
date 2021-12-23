@@ -24,12 +24,21 @@
 	   For convenience, make it a power of 2. */
 	.set adc_oversampling_factor_log, 2
 	.set adc_oversampling_factor, (1 << adc_oversampling_factor_log)
-	.set threshold, 70
+	.set hi_threshold, 70
+	.set lo_threshold, 50
 
 	/* Define variables, which go into .bss section (zero-initialized data) */
 	.bss
-	.global Offset
-Offset:
+	.global Count
+Count:
+	.long 0	
+
+	.global Gauss
+Gauss:
+	.long 0	
+
+	.global Engaged
+Engaged:
 	.long 0	
 
 	/* Code goes into .text section */
@@ -106,19 +115,45 @@ measure1:
 
 	/* Getting offset value = (Vp0 - Vp1) - (Vn0 - Vn1) */
 	sub r0, r1, r2
-
 	/* Getting absolute value from offset */
 	jumpr threshold_compare, 32767, lt
 	move r1, 65535
 	sub r0, r1, r0
 	add r0, r0, 1
 threshold_compare:
-	move r3, Offset
-	st r0,r3, 0
 	/* Comparing to threshold */
-	sub r0, r0, threshold
-	/* Goes to beginning if r0 is positive */
-	jumpr entry, 32767, ge
+
+
+
+	move r1, Gauss
+	move r2, Count
+	move r3, Engaged
+
+	st r0,r1, 0		//store value
+
+	/* Goes to beginning if r0 is bigger than  */
+	jumpr engage, hi_threshold, ge
+	jumpr disengage, lo_threshold, lt
+	jump entry
+
+engage:
+	ld r0,r3, 0        //get engage status
+	jumpr entry, 0, gt //already engaged
+
+	move r0, 1		//engage
+	st r0,r3, 0		//store
+
+	ld r0,r2, 0  
+	add r0, r0, 1
+	st r0,r2, 0
+	jump entry
+
+disengage:
+	move r0, 0		//disengage
+	st r0,r3, 0
+	jump entry
+
+
 
 	wake
 	halt
